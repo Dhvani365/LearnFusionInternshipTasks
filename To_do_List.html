@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo List</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <style>
+        .task-container {
+            display: flex;
+            align-items: center;
+        }
+        .task-priority {
+            width: 40px;
+            text-align: center;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .task-priority {
+                font-size: 0.9rem;
+            }
+            .task-container h5 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">To Do List</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+    <div class="container mt-5 col-md-8 col-lg-6">
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Enter Task to add" aria-label="Recipient's username" aria-describedby="button-addon2">
+        <button id="btn" class="btn btn-outline-secondary" type="button">Add Task</button>
+      </div>
+      <ul id="parentList" class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="task-container">
+                <h5 class="task-priority">1</h5>
+                <h5 class="flex-grow-1 ml-3">Sample Task</h5>
+            </div>
+            <div>
+                <button onclick="moveUp(this)" class="btn btn-outline-secondary btn-sm">Up</button>
+                <button onclick="moveDown(this)" class="btn btn-outline-warning btn-sm">Down</button>
+                <button onclick="removeListItem(this)" class="btn btn-outline-primary btn-sm">Remove</button>
+                <button onclick="editListItem(this)" class="btn btn-outline-danger btn-sm ml-1">Edit</button>
+            </div>
+        </li>
+      </ul>
+    </div>
+    </main>
+
+    <script>
+        let btn = document.getElementById('btn');
+        btn.addEventListener('click', addListItem);
+        let parentList = document.getElementById('parentList');
+
+        function addListItem(e) {
+            if (parentList.children[0] && parentList.children[0].className === "msgClass") {
+                parentList.children[0].remove();
+            }
+
+            let currInput = e.currentTarget.previousElementSibling;
+            let newLi = document.createElement('li');
+            newLi.className = 'list-group-item d-flex justify-content-between align-items-center';
+            
+            let taskCount = parentList.children.length + 1;
+            let newText = currInput.value;
+            
+            newLi.innerHTML = `
+                <div class="task-container">
+                    <span class="task-priority">${taskCount}</span>
+                    <h5 class="flex-grow-1 ml-3">${newText}</h5>
+                </div>
+                <div>
+                    <button onclick="moveUp(this)" class="btn btn-outline-secondary btn-sm">Up</button>
+                    <button onclick="moveDown(this)" class="btn btn-outline-secondary btn-sm">Down</button>
+                    <button onclick="removeListItem(this)" class="btn btn-outline-primary btn-sm">Remove</button>
+                    <button onclick="editListItem(this)" class="btn btn-outline-danger btn-sm ml-1">Edit</button>
+                </div>`;
+            
+            parentList.appendChild(newLi);
+            currInput.value = '';
+        }
+
+        function removeListItem(currElement) {
+            currElement.parentNode.parentNode.remove();
+            updatePriorities();
+        }
+
+        function editListItem(currElement) {
+          if(currElement.textContent=="Save"){
+            let headingElement=document.createElement('h5');
+            headingElement.classList.add('flex-grow-1','ml-3');
+            let removebtn=currElement.previousElementSibling;
+            headingElement.textContent=removebtn.parentNode.previousElementSibling.children[1].value;
+            currElement.parentNode.previousElementSibling.replaceChild(headingElement,removebtn.parentNode.previousElementSibling.children[1]);
+            currElement.textContent="Edit";
+          } else {
+            let inputElement=document.createElement('input');
+            inputElement.type="text";
+            inputElement.classList.add('form-control');
+            inputElement.value=currElement.parentNode.previousElementSibling.children[1].textContent;
+            currElement.parentNode.previousElementSibling.replaceChild(inputElement,currElement.parentNode.previousElementSibling.children[1]);
+            currElement.textContent="Save";
+          }
+        }
+
+        function moveUp(currElement) {
+            let currentLi = currElement.parentNode.parentNode;
+            let previousLi = currentLi.previousElementSibling;
+            if (previousLi) {
+                parentList.insertBefore(currentLi, previousLi);
+                updatePriorities();
+            }
+        }
+
+        function moveDown(currElement) {
+            let currentLi = currElement.parentNode.parentNode;
+            let nextLi = currentLi.nextElementSibling;
+            if (nextLi) {
+                parentList.insertBefore(nextLi, currentLi);
+                updatePriorities();
+            }
+        }
+
+        function updatePriorities() {
+            let items = parentList.children;
+            for (let i = 0; i < items.length; i++) {
+                let priorityElement = items[i].querySelector('.task-priority');
+                priorityElement.textContent = i + 1;
+            }
+
+            if (items.length <= 0) {
+                let msg = document.createElement('h3');
+                msg.classList.add("msgClass");
+                msg.textContent = "No data Found";
+                parentList.appendChild(msg);
+            }
+        }
+    </script>
+</body>
+</html>
